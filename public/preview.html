@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview & Verify Inspection</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/collector.css">
+</head>
+<body>
+  <header>
+    <h1>Review & Verify Inspection Record</h1>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <h3>Inspection Details <button class="secondary" style="float:right; padding:0.2rem 0.5rem; font-size:0.8rem;" onclick="editStep(1)">Edit</button></h3>
+      <p><strong>Date:</strong> <span id="prevDate"></span></p>
+      <p><strong>Quarter:</strong> <span id="prevQuarter"></span></p>
+      <p><strong>Type:</strong> <span id="prevType"></span></p>
+      
+      <hr style="margin: 1rem 0;">
+      <h3>Findings & Location <button class="secondary" style="float:right; padding:0.2rem 0.5rem; font-size:0.8rem;" onclick="editStep(2)">Edit</button></h3>
+      <p><strong>Identified Issues:</strong> <span id="prevIssues"></span></p>
+      <p><strong>Location:</strong> <span id="prevLocation"></span></p>
+      <p><strong>Stakeholders:</strong> <span id="prevStakeholders"></span></p>
+
+      <hr style="margin: 1rem 0;">
+      <h3>Supervision & Coordinates <button class="secondary" style="float:right; padding:0.2rem 0.5rem; font-size:0.8rem;" onclick="editStep(3)">Edit</button></h3>
+      <p><strong>Recommendations:</strong> <span id="prevRecommendations"></span></p>
+      <p><strong>Supervisor:</strong> <span id="prevSupervisor"></span></p>
+      <p><strong>Coordinates:</strong> <span id="prevCoords"></span></p>
+
+      <hr style="margin: 1rem 0;">
+      <h3>Image Evidence <button class="secondary" style="float:right; padding:0.2rem 0.5rem; font-size:0.8rem;" onclick="editStep(4)">Edit</button></h3>
+      <div id="prevImages"></div>
+
+      <hr style="margin: 1rem 0;">
+      <div style="margin: 1.5rem 0;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" id="confirmCheckbox" style="width: auto; margin:0;">
+          I confirm that the information provided is accurate and complete.
+        </label>
+      </div>
+
+      <div style="display: flex; justify-content: space-between;">
+        <button class="secondary" onclick="window.location.href='collector.html'">Back to Form</button>
+        <button id="submitBtn" onclick="submitInspection()" disabled style="background-color: var(--success);">Submit Inspection</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/preview.js"></script>
+</body>
+</html>

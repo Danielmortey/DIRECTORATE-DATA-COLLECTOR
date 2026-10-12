@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - Directorate System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+  <div class="card" style="max-width: 400px; width: 100%;">
+    <h2 style="margin-bottom: 1.5rem; text-align: center;">Admin Login</h2>
+    <form id="loginForm">
+      <label>Email Address</label>
+      <input type="email" id="email" required placeholder="admin@directorate.gov">
+      
+      <label>Password</label>
+      <input type="password" id="password" required placeholder="••••••••">
+      
+      <button type="submit" style="width: 100%; margin-top: 1rem;">Login to Dashboard</button>
+    </form>
+  </div>
+  
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        // Updated URL to 127.0.0.1 to match the Live Server origin
+        const response = await fetch('http://127.0.0.1:5000/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.data));
+          
+          if (data.data.role === 'ADMIN') {
+            window.location.href = 'admin/dashboard.html';
+          } else {
+            window.location.href = 'collector.html';
+          }
+        } else {
+          alert(data.message || 'Login failed');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Could not connect to the server. Ensure the backend is running on port 5000.');
+      }
+    });
+  </script>
+</body>
+</html>

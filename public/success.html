@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inspection Submitted</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+  <div class="card" style="text-align: center; max-width: 500px; width: 100%;">
+    <h2 style="color: var(--success); margin-bottom: 1rem;">Inspection Submitted Successfully</h2>
+    <p style="margin-bottom: 1.5rem;">Your inspection has been successfully recorded in the Directorate database.</p>
+    <p><strong>Reference Number:</strong> <span id="refNum" style="font-size: 1.2rem; color: var(--primary);"></span></p>
+    <p><strong>Date Submitted:</strong> <span id="subDate"></span></p>
+    
+    <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+      <button onclick="window.location.href='collector.html'">Start New Inspection</button>
+    </div>
+  </div>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    document.getElementById('refNum').innerText = urlParams.get('ref') || 'DIR-2026-000001';
+    document.getElementById('subDate').innerText = new Date().toLocaleDateString();
+  </script>
+</body>
+</html>

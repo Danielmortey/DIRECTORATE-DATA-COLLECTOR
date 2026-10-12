@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Directorate Data Collector - New Inspection</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/collector.css">
+</head>
+<body>
+  <header>
+    <h1>Directorate Field Inspection Collector</h1>
+    <button class="secondary" onclick="clearDraft()">Clear Draft</button>
+  </header>
+
+  <div class="container">
+    <div class="stepper">
+      <div id="indicator-1" class="step-indicator active">STEP 1<br>Details</div>
+      <div id="indicator-2" class="step-indicator">STEP 2<br>Findings</div>
+      <div id="indicator-3" class="step-indicator">STEP 3<br>Supervision</div>
+      <div id="indicator-4" class="step-indicator">STEP 4<br>Evidence</div>
+    </div>
+
+    <div class="card">
+      <form id="inspectionForm">
+        <!-- STEP 1 -->
+        <div id="step-1" class="form-step active">
+          <h3>Inspection Details</h3>
+          <label>Date of Inspection *</label>
+          <input type="date" id="inspectionDate" required>
+
+          <label>Quarter</label>
+          <select id="quarter" disabled>
+            <option value="Q1">Q1 — January to March</option>
+            <option value="Q2">Q2 — April to June</option>
+            <option value="Q3">Q3 — July to September</option>
+            <option value="Q4">Q4 — October to December</option>
+          </select>
+
+          <label>Type of Inspection *</label>
+          <select id="inspectionType" required>
+            <option value="">Select Type</option>
+            <option value="Routine Inspection">Routine Inspection</option>
+            <option value="Monitoring Visit">Monitoring Visit</option>
+            <option value="Follow-up Inspection">Follow-up Inspection</option>
+            <option value="Special Inspection">Special Inspection</option>
+            <option value="Compliance Inspection">Compliance Inspection</option>
+            <option value="Investigation">Investigation</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <div id="customTypeGroup" style="display:none;">
+            <label>Specify Inspection Type</label>
+            <input type="text" id="customInspectionType" placeholder="Enter custom type...">
+          </div>
+
+          <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+            <button type="button" onclick="nextStep()">Next</button>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div id="step-2" class="form-step">
+          <h3>Findings & Location</h3>
+          <label>Identified Issues *</label>
+          <textarea id="identifiedIssues" rows="4" placeholder="Describe the major issues identified during the inspection..."></textarea>
+
+          <label>Location / Site *</label>
+          <input type="text" id="location" placeholder="e.g., Adabraka, Accra">
+
+          <label>Stakeholders Involved *</label>
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+            <input type="text" id="stakeholderInput" placeholder="e.g., Site Manager, Local Chief...">
+            <button type="button" class="secondary" onclick="addStakeholder()" style="width: auto;">+ Add</button>
+          </div>
+          <div id="stakeholderContainer" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;"></div>
+
+          <div style="margin-top: 2rem; display: flex; justify-content: space-between;">
+            <button type="button" class="secondary" onclick="prevStep()">Back</button>
+            <button type="button" onclick="nextStep()">Next</button>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div id="step-3" class="form-step">
+          <h3>Supervision & Location Coordinates</h3>
+          <label>Recommendations from Unit *</label>
+          <textarea id="recommendations" rows="4" placeholder="Enter recommended actions or corrective measures..."></textarea>
+
+          <label>Supervisor *</label>
+          <select id="supervisorId" required></select>
+
+          <label>Site Coordinates</label>
+          <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+            <input type="text" id="latitude" placeholder="Latitude" readonly style="margin-bottom:0;">
+            <input type="text" id="longitude" placeholder="Longitude" readonly style="margin-bottom:0;">
+            <button type="button" id="locationBtn" onclick="getCurrentLocation()" style="white-space: nowrap;">Get Current Location</button>
+          </div>
+          <p id="locationStatus" style="font-size: 0.85rem; color: #64748b; margin-bottom: 1rem;"></p>
+
+          <div style="margin-top: 2rem; display: flex; justify-content: space-between;">
+            <button type="button" class="secondary" onclick="prevStep()">Back</button>
+            <button type="button" onclick="nextStep()">Next</button>
+          </div>
+        </div>
+
+        <!-- STEP 4 -->
+        <div id="step-4" class="form-step">
+          <h3>Image Evidence</h3>
+          <label>Upload Inspection Images (Max 10, 5MB each)</label>
+          <input type="file" id="imageUploadInput" multiple accept="image/*" onchange="handleImageSelection(event)">
+          
+          <div id="imagePreviewGrid" class="image-preview-grid"></div>
+
+          <div style="margin-top: 2rem; display: flex; justify-content: space-between;">
+            <button type="button" class="secondary" onclick="prevStep()">Back</button>
+            <button type="button" onclick="nextStep()">Preview & Verify</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/collector.js"></script>
+</body>
+</html>

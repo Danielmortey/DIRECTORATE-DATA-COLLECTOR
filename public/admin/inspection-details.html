@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inspection Details - Directorate System</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <header>
+    <h1 id="headerTitle">Inspection Details</h1>
+    <a href="inspections.html" style="color: white; text-decoration: none;">&larr; Back to List</a>
+  </header>
+
+  <div class="container">
+    <div class="card" id="detailsCard">
+      <p>Loading inspection details...</p>
+    </div>
+  </div>
+
+  <!-- Hidden Modal for Fullscreen Image Viewing -->
+  <div id="imageModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); justify-content: center; align-items: center; flex-direction: column;">
+    <span onclick="closeModal()" style="position: absolute; top: 20px; right: 40px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer; user-select: none;">&times;</span>
+    <img id="modalImage" style="max-width: 90%; max-height: 85%; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+    <p id="modalCaption" style="color: white; margin-top: 15px; font-size: 1.2rem; text-align: center; max-width: 80%;"></p>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get('id');
+      if (!id) return;
+      try {
+        const res = await apiRequest(`/inspections/${id}`);
+        const i = res.data;
+        document.getElementById('headerTitle').innerText = `Inspection Report: ${i.referenceNumber}`;
+        document.getElementById('detailsCard').innerHTML = `
+          <h3>Inspection Information</h3>
+          <p><strong>Reference Number:</strong> ${i.referenceNumber}</p>
+          <p><strong>Date:</strong> ${new Date(i.dateOfInspection).toLocaleDateString()}</p>
+          <p><strong>Quarter:</strong> ${i.quarter}</p>
+          <p><strong>Inspection Type:</strong> ${i.inspectionType}</p>
+          <p><strong>Status:</strong> <span class="badge badge-${i.status.toLowerCase().replace(/\s+/g, '')}">${i.status}</span></p>
+
+          <hr style="margin: 1rem 0;">
+          <h3>Findings & Location</h3>
+          <p><strong>Identified Issues:</strong> ${i.identifiedIssues}</p>
+          <p><strong>Location:</strong> ${i.location}</p>
+          <p><strong>Stakeholders:</strong> ${i.stakeholders.join(', ')}</p>
+
+          <hr style="margin: 1rem 0;">
+          <h3>Supervision & Recommendations</h3>
+          <p><strong>Recommendations:</strong> ${i.recommendations}</p>
+          <p><strong>Supervisor:</strong> ${i.supervisorName || 'Not specified'}</p>
+          <p><strong>Coordinates:</strong> ${i.coordinates ? `${i.coordinates.latitude},${i.coordinates.longitude}` : 'Not provided'}</p>
+
+          <hr style="margin: 1rem 0;">
+          <h3>Image Evidence</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;">
+            ${(i.images && i.images.length > 0) ? i.images.map(img => `
+              <div>
+                <img 
+                  src="${img.url}" 
+                  onclick="openModal('${img.url}', '${(img.caption || '').replace(/'/g, "\\'")}')" 
+                  style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px; cursor: pointer; transition: transform 0.2s;" 
+                  onmouseover="this.style.transform='scale(1.05)'" 
+                  onmouseout="this.style.transform='scale(1)'" 
+                  title="Click to view full size" 
+                />
+                <p style="font-size: 0.8rem; margin-top: 0.25rem;">${img.caption || 'No caption'}</p>
+              </div>
+            `).join('') : '<p style="color: #64748b; font-style: italic;">No image evidence provided.</p>'}
+          </div>
+
+          <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+            <select id="newStatus" style="width: auto; margin-bottom: 0;">
+              <option value="Submitted">Submitted</option>
+              <option value="Under Review">Under Review</option>
+              <option value="Follow-up Required">Follow-up Required</option>
+              <option value="Resolved">Resolved</option>
+              <option value="Closed">Closed</option>
+            </select>
+            <button onclick="updateStatus('${i._id}')">Update Status</button>
+          </div>
+        `;
+        document.getElementById('newStatus').value = i.status;
+      } catch (err) {
+        alert('Failed to load details');
+      }
+    });
+
+    async function updateStatus(id) {
+      const status = document.getElementById('newStatus').value;
+      try {
+        await apiRequest(`/inspections/${id}/status`, 'PUT', { status });
+        alert('Status updated successfully');
+        window.location.reload();
+      } catch (err) {
+        alert('Failed to update status');
+      }
+    }
+
+    // --- Modal Logic ---
+    function openModal(url, caption) {
+      const modal = document.getElementById('imageModal');
+      const modalImg = document.getElementById('modalImage');
+      const modalCap = document.getElementById('modalCaption');
+      
+      modal.style.display = 'flex';
+      modalImg.src = url;
+      modalCap.innerText = caption || '';
+    }
+
+    function closeModal() {
+      document.getElementById('imageModal').style.display = 'none';
+      document.getElementById('modalImage').src = '';
+    }
+    
+    // Allows the user to click anywhere in the dark background to close the image
+    document.getElementById('imageModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeModal();
+      }
+    });
+  </script>
+</body>
+</html>

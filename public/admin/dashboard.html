@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Directorate Inspection System</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Directorate Inspection Dashboard</h1>
+    <div>
+      <a href="inspections.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Manage Inspections</a>
+      <button class="secondary" onclick="localStorage.clear(); window.location.href='../login.html'">Logout</button>
+    </div>
+  </header>
+
+  <div class="container">
+    
+    <!-- Dynamic Bar Charts Section -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+      
+      <!-- Chart 1: Volume -->
+      <div class="card" style="padding: 1.5rem;">
+        <h3 style="margin-bottom: 1rem; color: #1e293b;">Inspection Volume</h3>
+        <!-- The wrapper div locks the chart height -->
+        <div style="position: relative; height: 300px; width: 100%;">
+          <canvas id="volumeChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 2: Status -->
+      <div class="card" style="padding: 1.5rem;">
+        <h3 style="margin-bottom: 1rem; color: #1e293b;">Action Status Overview</h3>
+        <!-- The wrapper div locks the chart height -->
+        <div style="position: relative; height: 300px; width: 100%;">
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Recent Inspections Table -->
+    <div class="card">
+      <h3>Recent Inspections Overview</h3>
+      <div style="margin-top: 1rem; overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border);">
+              <th style="padding: 0.75rem;">Reference</th>
+              <th style="padding: 0.75rem;">Date</th>
+              <th style="padding: 0.75rem;">Type</th>
+              <th style="padding: 0.75rem;">Location</th>
+              <th style="padding: 0.75rem;">Supervisor</th>
+              <th style="padding: 0.75rem;">Status</th>
+            </tr>
+          </thead>
+          <tbody id="recentTableBody">
+            <tr><td colspan="6" style="text-align: center; padding: 2rem;">Loading data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('token');
+      if (!token) { window.location.href = '../login.html'; return; }
+      
+      try {
+        const statsRes = await apiRequest('/dashboard/stats');
+        const kpis = statsRes.data.kpis;
+        
+        // --- Initialize Chart 1: Volume ---
+        const ctxVolume = document.getElementById('volumeChart').getContext('2d');
+        new Chart(ctxVolume, {
+          type: 'bar',
+          data: {
+            labels: ['Total Inspections', 'This Month'],
+            datasets: [{
+              label: 'Number of Inspections',
+              data: [kpis.totalInspections, kpis.inspectionsThisMonth],
+              backgroundColor: ['#1e3a8a', '#3b82f6'],
+              borderRadius: 6,
+              borderSkipped: false,
+              barThickness: 60
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
+          }
+        });
+
+        // --- Initialize Chart 2: Status ---
+        const ctxStatus = document.getElementById('statusChart').getContext('2d');
+        new Chart(ctxStatus, {
+          type: 'bar',
+          data: {
+            labels: ['Pending Follow-up', 'Resolved'],
+            datasets: [{
+              label: 'Number of Inspections',
+              data: [kpis.pendingFollowUp, kpis.resolvedInspections],
+              backgroundColor: ['#f59e0b', '#10b981'],
+              borderRadius: 6,
+              borderSkipped: false,
+              barThickness: 60
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
+          }
+        });
+
+        // Populate Recent Inspections Table
+        const inspRes = await apiRequest('/inspections?limit=5');
+        const tbody = document.getElementById('recentTableBody');
+        tbody.innerHTML = inspRes.data.map(i => `
+          <tr style="border-bottom: 1px solid var(--border); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
+            <td style="padding: 0.75rem;"><a href="inspection-details.html?id=${i._id}" style="color: var(--primary); font-weight: 600;">${i.referenceNumber}</a></td>
+            <td style="padding: 0.75rem;">${new Date(i.dateOfInspection).toLocaleDateString()}</td>
+            <td style="padding: 0.75rem;">${i.inspectionType}</td>
+            <td style="padding: 0.75rem;">${i.location}</td>
+            <td style="padding: 0.75rem;">${i.supervisorName}</td>
+            <td style="padding: 0.75rem;"><span class="badge badge-${i.status.toLowerCase().replace(/\s+/g, '')}">${i.status}</span></td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load dashboard data:', err);
+        document.getElementById('recentTableBody').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: red;">Failed to load data. Ensure backend is running.</td></tr>';
+      }
+    });
+  </script>
+</body>
+</html>

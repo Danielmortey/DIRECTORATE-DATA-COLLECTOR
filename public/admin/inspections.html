@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Inspections - Directorate System</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Inspection Records Management</h1>
+    <a href="dashboard.html" style="color: white; text-decoration: none;">&larr; Back to Dashboard</a>
+  </header>
+
+  <div class="container">
+    <div class="card" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+      <input type="text" id="searchInput" placeholder="Search reference, location, issues..." style="flex: 2; margin-bottom: 0;">
+      <select id="filterStatus" style="flex: 1; margin-bottom: 0;">
+        <option value="">All Statuses</option>
+        <option value="Submitted">Submitted</option>
+        <option value="Follow-up Required">Follow-up Required</option>
+        <option value="Resolved">Resolved</option>
+      </select>
+      <button onclick="loadInspections()">Filter</button>
+      <button class="secondary" onclick="exportCSV()">Export CSV</button>
+    </div>
+
+    <div class="card">
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border);">
+              <th style="padding: 0.75rem;">Reference</th>
+              <th style="padding: 0.75rem;">Date</th>
+              <th style="padding: 0.75rem;">Type</th>
+              <th style="padding: 0.75rem;">Location</th>
+              <th style="padding: 0.75rem;">Supervisor</th>
+              <th style="padding: 0.75rem;">Status</th>
+              <th style="padding: 0.75rem;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="inspectionTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    let allInspections = [];
+
+    document.addEventListener('DOMContentLoaded', loadInspections);
+
+    async function loadInspections() {
+      const search = document.getElementById('searchInput').value;
+      const status = document.getElementById('filterStatus').value;
+      try {
+        let query = `?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}`;
+        const res = await apiRequest(`/inspections${query}`);
+        allInspections = res.data;
+        const tbody = document.getElementById('inspectionTableBody');
+        tbody.innerHTML = allInspections.map(i => `
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 0.75rem;">${i.referenceNumber}</td>
+            <td style="padding: 0.75rem;">${new Date(i.dateOfInspection).toLocaleDateString()}</td>
+            <td style="padding: 0.75rem;">${i.inspectionType}</td>
+            <td style="padding: 0.75rem;">${i.location}</td>
+            <td style="padding: 0.75rem;">${i.supervisorName}</td>
+            <td style="padding: 0.75rem;"><span class="badge badge-${i.status.toLowerCase().replace(/\s+/g, '')}">${i.status}</span></td>
+            <td style="padding: 0.75rem;">
+              <button onclick="window.location.href='inspection-details.html?id=${i._id}'" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">View</button>
+              <button class="secondary" onclick="deleteRecord('${i._id}')" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; background-color: var(--error);">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        alert('Failed to load records');
+      }
+    }
+
+    async function deleteRecord(id) {
+      if (confirm('Are you sure you want to delete this inspection record?')) {
+        try {
+          await apiRequest(`/inspections/${id}`, 'DELETE');
+          loadInspections();
+        } catch (err) {
+          alert('Deletion failed');
+        }
+      }
+    }
+
+    function exportCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,Reference,Date,Type,Location,Supervisor,Status\n";
+      allInspections.forEach(i => {
+        csvContent += `"${i.referenceNumber}","${i.dateOfInspection}","${i.inspectionType}","${i.location}","${i.supervisorName}","${i.status}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "inspections_export.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
