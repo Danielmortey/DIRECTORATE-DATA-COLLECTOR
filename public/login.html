@@ -24,8 +24,8 @@
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       try {
-        // Updated URL to 127.0.0.1 to match the Live Server origin
-        const response = await fetch('http://127.0.0.1:5000/api/auth/login', {
+        // Updated to use a relative path so it dynamically connects to Render
+        const response = await fetch('/api/auth/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -52,7 +52,7 @@
         }
       } catch (err) {
         console.error(err);
-        alert('Could not connect to the server. Ensure the backend is running on port 5000.');
+        alert('Could not connect to the server. Please check your internet connection and try again.');
       }
     });
   </script>
