@@ -4,7 +4,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
-require('dotenv').config();
+// Ensures it finds the .env file in the root folder
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const authRoutes = require('./routes/authRoutes');
 const inspectionRoutes = require('./routes/inspectionRoutes');
@@ -20,10 +21,10 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serve the frontend static files so Node.js acts as the web server
+// 1. THIS IS THE FIX: Serves the frontend static files so Node.js acts as the web server
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Rate Limiting
+// Rate Limiting for API routes only
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
